@@ -93,10 +93,10 @@ class GameClass:
         def __init__(self):
                 self.is_game_ongoing=True
                 self.move_frequency=2.0
-                self.board_size = { "x": 10, "y": 10 }
+                self.board_size = { "x": 10, "y": 13 }
                 self.board = []
-                self.piece_pos=[0, 5]
-                self.piece_type = "I"
+                self.piece_pos= []
+                self.piece_type = ""
 
                 self.row_move={ "up": -1, "down": 1, "right": 0, "left": 0}
                 self.col_move={ "up": 0, "down": 0, "right": 1, "left": -1}
@@ -114,6 +114,8 @@ class GameClass:
                 # Setup the board.
                 for i in range(0, self.board_size["y"]):
                         self.board.append([0 for i in range(0, self.board_size["x"])])
+                        
+                self.spawn_new_piece()
 
         def remove_piece(self):
                 for i in range(len(self.cur_piece)):
