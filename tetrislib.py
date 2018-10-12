@@ -19,23 +19,30 @@ UP_ARROW_KEY=65362
 RIGHT_ARROW_KEY=65363
 DOWN_ARROW_KEY=65364
 
+ENTER=65293
+SPACE=32
+
 def keyDown(e, app):
         print e.keysym_num
-        if e.keysym_num==UP_ARROW_KEY:
-                app.game.update_board("up")
-        if e.keysym_num==LEFT_ARROW_KEY:
-                app.game.update_board("left")
-        if e.keysym_num==RIGHT_ARROW_KEY:
-                app.game.update_board("right")
-        if e.keysym_num==DOWN_ARROW_KEY:
-                app.game.update_board("down")
+        if app.game.is_game_ongoing:
+                if e.keysym_num==UP_ARROW_KEY:
+                        app.game.update_board("up")
+                if e.keysym_num==LEFT_ARROW_KEY:
+                        app.game.update_board("left")
+                if e.keysym_num==RIGHT_ARROW_KEY:
+                        app.game.update_board("right")
+                if e.keysym_num==DOWN_ARROW_KEY:
+                        app.game.update_board("down")
+                if e.keysym_num==SPACE:
+                        app.game.teleport_down()
+        elif e.keysym_num==ENTER:
+                app.game=GameClass()
 
 class MainApp(Tk):
         def __init__(self):
                 Tk.__init__(self)
 
                 self.game=GameClass()
-                self.game.move_frequency=2.0
                 width=SQUARE_SIZE*self.game.board_size["x"]
                 height=SQUARE_SIZE*self.game.board_size["y"]
                 self.canvas=Canvas(self, width=width, height=height)
@@ -58,14 +65,34 @@ class MainApp(Tk):
                                 if not self.game.board[row][col]==0:
                                         self.canvas.create_rectangle(x1, y1, x2, y2, fill="blue")
 
-                if time.time()-self.time_move>self.game.move_frequency:
+                if not self.game.is_game_ongoing:
+                        self.draw_game_over()
+
+                if time.time()-self.time_move>self.game.move_frequency and self.game.is_game_ongoing:
                         self.game.move_piece_down()
                         self.time_move=time.time()
 
                 self.after(1, self.draw)
+
+        def draw_game_over(self):
+                canvas_width=self.canvas.winfo_width()
+                canvas_height=self.canvas.winfo_height()
+                rect_width=0.5*canvas_width
+                rect_height=0.5*rect_width
+                x1=canvas_width/2-rect_width/2
+                y1=rect_height
+                x2=x1+rect_width
+                y2=y1+rect_height
+                self.canvas.create_rectangle(x1, y1, x2, y2, fill="white")
+                font=tkFont.Font(family='Helvetica', size=10, weight='bold')
+                padding=20
+                self.canvas.create_text((x1+x2)/2, y1+padding, font=font, text="GAME OVER") 
+                self.canvas.create_text((x1+x2)/2, y1+2*padding, font=font, text="PRESS ENTER FOR NEW GAME")
                 
 class GameClass:
         def __init__(self):
+                self.is_game_ongoing=True
+                self.move_frequency=2.0
                 self.board_size = { "x": 10, "y": 10 }
                 self.board = []
                 self.piece_pos=[0, 5]
@@ -73,7 +100,7 @@ class GameClass:
 
                 self.row_move={ "up": -1, "down": 1, "right": 0, "left": 0}
                 self.col_move={ "up": 0, "down": 0, "right": 1, "left": -1}
-                """
+                
                 self.pieces={"I": [[0, 0], [0, 1], [0, 2], [0, 3]],
                                 "J": [[0, 0], [0, 1], [-1, 1], [-2, 1]], 
                                 "L": [[0, 0], [0, 1], [-1, 0], [-2, 0]],
@@ -81,15 +108,7 @@ class GameClass:
                                 "S": [[0, 0], [0, 1], [-1, 1], [-1, 2]],
                                 "T": [[0, 1], [-1, 0], [-1, 1], [-1, 2]],
                                 "Z": [[0, 0], [0, 1], [-1, 1], [-1, 2]]}
-                """
-                self.pieces={"I": [[0, 0], [0, 1], [0, 2], [0, 3]],
-                                "J": [[0, 0], [0, 1], [1, 1], [2, 1]], 
-                                "L": [[0, 0], [0, 1], [1, 0], [2, 0]],
-                                "O": [[0, 0], [0, 1], [1, 0], [1, 1]],
-                                "S": [[0, 0], [0, 1], [1, 1], [1, 2]],
-                                "T": [[0, 1], [1, 0], [1, 1], [1, 2]],
-                                "Z": [[0, 0], [0, 1], [1, 1], [1, 2]]}
-
+                
                 self.cur_piece=[[0, 0], [0, 1], [0, 2], [0, 3]]
 
                 # Setup the board.
@@ -141,7 +160,7 @@ class GameClass:
                                 return False
                         #print "row= ", row
                         #print "col= ", col
-                        if row>=self.board_size["y"]-1 or self.board[row+1][col]==UNMOVABLE:
+                        if row>=self.board_size["y"]-1 or (row>=0 and self.board[row+1][col]==UNMOVABLE):
                                 return True
                 return False
 
@@ -149,7 +168,7 @@ class GameClass:
                 for i in range(len(self.cur_piece)):
                         row=self.piece_pos[0]+self.cur_piece[i][0]
                         col=self.piece_pos[1]+self.cur_piece[i][1]
-                        if col<=0 or self.board[row][col-1]==UNMOVABLE:
+                        if col<=0 or (row>=0 and self.board[row][col-1]==UNMOVABLE):
                                 return True
                 return False
 
@@ -157,7 +176,7 @@ class GameClass:
                 for i in range(len(self.cur_piece)):
                         row=self.piece_pos[0]+self.cur_piece[i][0]
                         col=self.piece_pos[1]+self.cur_piece[i][1]
-                        if col>=self.board_size["x"]-1 or self.board[row][col+1]==UNMOVABLE:
+                        if col>=self.board_size["x"]-1 or (row>=0 and self.board[row][col+1]==UNMOVABLE):
                                 return True
                 return False
 
@@ -197,9 +216,7 @@ class GameClass:
 
         def check_game_over(self):
                 if self.is_piece_at_bottom():
-                        self.draw_board()
-                        print "GAME OVER"
-                        sys.exit()
+                        self.is_game_ongoing=False
 
         def update_board(self, input):
                 self.remove_piece()
@@ -220,10 +237,18 @@ class GameClass:
                         self.set_piece_unmovable()
                         self.spawn_new_piece()
                         self.check_game_over()
+                        self.clear_lines()
+                        return False
+                
                 self.clear_lines()
+                return True
 
         def move_piece_down(self):
                 self.update_board("down")
+
+        def teleport_down(self):
+                while self.update_board("down"):
+                        pass
                         
 # Draws the contents of the board with a border around it.
         def draw_board(self):
@@ -237,42 +262,6 @@ class GameClass:
                         line += "|"
                         print(line)
                 print(board_border)
-
-        def play_game(game):
-                while True:
-                        input=get_input()
-    #q.put(get_input())
-    #game.update_board("down")
-    #game.update_board(q.get)
-                        game.update_board(input)
-                        game.draw_board()
-
-# Waits for a single character of input and returns the string "left", "down", "right", "up", or None.
-def get_input():
-    original_terminal_state = None
-
-    input = sys.stdin.read(1)
-
-    # The arrow keys are read from stdin as an escaped sequence of 3 bytes.
-    escape_sequence = "\x1b"
-    ctrl_c = "\003"
-    if input == escape_sequence:
-        # The next two bytes will indicate which arrow keyw as pressed.
-        character = sys.stdin.read(2)
-        arrow_character_codes = dict(D="left", B="down", C="right", A="up")
-        return arrow_character_codes.get(character[1], None)
-    elif input == ctrl_c:
-        sys.exit()
-
-    return None
-
-def set_terminal_mode():
-    original_terminal_state = Popen(b"stty -g", stdout=PIPE, shell=True).communicate()[0]
-    os.system(b"stty -icanon -echo -isig")
-    return original_terminal_state
-
-def restore_terminal(state):
-    os.system(b"stty " + state)
 
 if __name__=="__main__":
         app=MainApp()
