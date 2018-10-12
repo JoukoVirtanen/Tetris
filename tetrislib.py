@@ -2,6 +2,7 @@ from Tkinter import *
 import tkFont
 import os
 import sys
+import math
 from subprocess import Popen, PIPE
 
 import random
@@ -72,6 +73,13 @@ class MainApp(Tk):
                         self.game.move_piece_down()
                         self.time_move=time.time()
 
+                font=tkFont.Font(family='Helvetica', size=24, weight='bold')
+                canvas_width=self.canvas.winfo_width()
+                padding=20
+                x=canvas_width/50+padding*len(str(self.game.score))
+                y=padding
+                self.canvas.create_text(x, y, font=font, text=str(self.game.score), fill="red")
+
                 self.after(1, self.draw)
 
         def draw_game_over(self):
@@ -97,6 +105,7 @@ class GameClass:
                 self.board = []
                 self.piece_pos= []
                 self.piece_type = ""
+                self.score=0
 
                 self.row_move={ "up": -1, "down": 1, "right": 0, "left": 0}
                 self.col_move={ "up": 0, "down": 0, "right": 1, "left": -1}
@@ -209,12 +218,16 @@ class GameClass:
                                 self.board[i][j]=self.board[i-1][j]
 
         def clear_lines(self):
+                nclear=0
                 for i in range(len(self.board)):
                         clear=self.check_line(i)
                         if clear:
+                                nclear+=1
                                 for j in range(len(self.board[0])):
                                         self.board[i][j]=0
                                 self.move_lines_down(i)
+
+                if nclear>0: self.score+=100*10**nclear
 
         def check_game_over(self):
                 if self.is_piece_at_bottom():
@@ -249,6 +262,7 @@ class GameClass:
                 self.update_board("down")
 
         def teleport_down(self):
+                self.score+=100
                 while self.update_board("down"):
                         pass
                         
