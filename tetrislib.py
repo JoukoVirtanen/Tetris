@@ -24,7 +24,6 @@ ENTER=65293
 SPACE=32
 
 def keyDown(e, app):
-        print e.keysym_num
         if app.game.is_game_ongoing:
                 if e.keysym_num==UP_ARROW_KEY:
                         app.game.update_board("up")
@@ -133,21 +132,21 @@ class GameClass:
                 for i in range(len(self.cur_piece)):
                         row=self.piece_pos[0]+self.cur_piece[i][0]
                         col=self.piece_pos[1]+self.cur_piece[i][1]
-                        if row>=0 and row<self.board_size["x"] and col>=0 and col<self.board_size["y"]:
+                        if row>=0 and row<self.board_size["y"] and col>=0 and col<self.board_size["x"]:
                                 self.board[row][col]=0
 
         def add_piece(self):
                 for i in range(len(self.cur_piece)):
                         row=self.piece_pos[0]+self.cur_piece[i][0]
                         col=self.piece_pos[1]+self.cur_piece[i][1]
-                        if row>=0 and row<self.board_size["x"] and col>=0 and col<self.board_size["y"]:
+                        if row>=0 and row<self.board_size["y"] and col>=0 and col<self.board_size["x"]:
                                 self.board[row][col]=1
 
         def has_clash(self, temp):
                 for i in range(len(temp)):
                         row=self.piece_pos[0]+temp[i][0]
                         col=self.piece_pos[1]+temp[i][1]
-                        if row>=self.board_size["x"] or col<0 or col>=self.board_size["y"] or self.board[row][col]==UNMOVABLE:
+                        if row>=self.board_size["y"] or col<0 or col>=self.board_size["x"] or (row>=0 and self.board[row][col]==UNMOVABLE):
                                 return True
                 return False
 
