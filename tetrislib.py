@@ -73,13 +73,14 @@ class MainApp(Tk):
                         self.game.move_piece_down()
                         self.time_move=time.time()
 
-                font=tkFont.Font(family='Helvetica', size=24, weight='bold')
+                font_size=10    
+                score_font=tkFont.Font(family='Helvetica', size=font_size, weight='bold')
                 canvas_width=self.canvas.winfo_width()
-                padding=20
+                padding=font_size
                 x=canvas_width/50+padding*len(str(self.game.score))
                 y=padding
-                self.canvas.create_text(x, y, font=font, text=str(self.game.score), fill="red")
-
+                self.canvas.create_text(x, y, font=score_font, text=str(self.game.score), fill="red")
+                
                 self.after(1, self.draw)
 
         def draw_game_over(self):
@@ -91,9 +92,10 @@ class MainApp(Tk):
                 y1=rect_height
                 x2=x1+rect_width
                 y2=y1+rect_height
+                font_size=10
                 self.canvas.create_rectangle(x1, y1, x2, y2, fill="white")
-                font=tkFont.Font(family='Helvetica', size=10, weight='bold')
-                padding=20
+                font=tkFont.Font(family='Helvetica', size=font_size, weight='bold')
+                padding=2*font_size
                 self.canvas.create_text((x1+x2)/2, y1+padding, font=font, text="GAME OVER") 
                 self.canvas.create_text((x1+x2)/2, y1+2*padding, font=font, text="PRESS ENTER FOR NEW GAME")
                 
@@ -106,6 +108,7 @@ class GameClass:
                 self.piece_pos= []
                 self.piece_type = ""
                 self.score=0
+                self.nspawned=0
 
                 self.row_move={ "up": -1, "down": 1, "right": 0, "left": 0}
                 self.col_move={ "up": 0, "down": 0, "right": 1, "left": -1}
@@ -192,6 +195,10 @@ class GameClass:
                 return False
 
         def spawn_new_piece(self):
+                self.nspawned+=1
+                if self.nspawned%20==0:
+                        self.move_frequency*=0.8
+                
                 self.piece_type=random.sample(self.pieces, 1)[0]
                 col=random.randint(0, len(self.board[0])-5)
                 self.piece_pos=[0, col]
