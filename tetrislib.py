@@ -193,17 +193,36 @@ class GameClass:
                                 return True
                 return False
 
+        def get_min_col_offset(self):
+                min_offset=0
+                for i in range(len(self.pieces[self.piece_type])):
+                        if i==0 or self.pieces[self.piece_type][i][1]<min_offset:
+                                min_offset=self.pieces[self.piece_type][i][1]
+
+                return min_offset
+
+        def get_max_col_offset(self):
+                max_offset=0
+                for i in range(len(self.pieces[self.piece_type])):
+                        if i==0 or self.pieces[self.piece_type][i][1]>max_offset:
+                                max_offset=self.pieces[self.piece_type][i][1]
+
+                return max_offset
+
         def spawn_new_piece(self):
                 self.nspawned+=1
                 if self.nspawned%20==0:
                         self.move_frequency*=0.8
                 
                 self.piece_type=random.sample(self.pieces, 1)[0]
-                col=random.randint(0, len(self.board[0])-5)
+                min_offset=self.get_min_col_offset()
+                max_offset=self.get_max_col_offset()
+                col=random.randint(-min_offset, len(self.board[0])-max_offset-1)
                 self.piece_pos=[0, col]
                 for i in range(len(self.pieces[self.piece_type])):
                         self.cur_piece[i][0]=self.pieces[self.piece_type][i][0]
                         self.cur_piece[i][1]=self.pieces[self.piece_type][i][1]
+
 
         def set_piece_unmovable(self):
                 for i in range(len(self.cur_piece)):
