@@ -118,7 +118,15 @@ class GameClass:
                                 "O": [[0, 0], [0, 1], [-1, 0], [-1, 1]],
                                 "S": [[0, 0], [0, 1], [-1, 1], [-1, 2]],
                                 "T": [[0, 1], [-1, 0], [-1, 1], [-1, 2]],
-                                "Z": [[0, 0], [0, 1], [-1, 0], [-1, -1]]} #Was [[0, 0], [0, 1], [-1, 1], [-1, 2]]
+                                "Z": [[0, 0], [0, 1], [-1, 0], [-1, -1]]}
+
+                self.centers={"I": [0, 1],
+                              "J": [0, 1],
+                              "L": [0, 1],
+                              "O": [-0.5, 0.5],
+                              "S": [0, 1],
+                              "T": [-1, 1],
+                              "Z": [0, 1]}
                 
                 self.cur_piece=[[0, 0], [0, 1], [0, 2], [0, 3]]
 
@@ -154,16 +162,19 @@ class GameClass:
                 temp=['?']*len(self.cur_piece)
                 for i in range(len(self.cur_piece)):
                         temp[i]=[0, 0]
-
+                
                 for i in range(len(self.cur_piece)):
-                        temp[i][0]=self.cur_piece[i][1]
-                        temp[i][1]=-self.cur_piece[i][0]
+                        temp[i][0]=(self.cur_piece[i][1]-self.centers[self.piece_type][1])+self.centers[self.piece_type][0]
+                        temp[i][1]=-(self.cur_piece[i][0]-self.centers[self.piece_type][0])+self.centers[self.piece_type][1]
+
+                        temp[i][0]=int(temp[i][0])
+                        temp[i][1]=int(temp[i][1])
 
                 clash=self.has_clash(temp)
 
                 if not clash:
                         for i in range(len(self.cur_piece)):
-                                self.cur_piece[i]=[temp[i][0], temp[i][1]]
+                                self.cur_piece[i]=[int(temp[i][0]), int(temp[i][1])]
 
         def is_piece_at_bottom(self):
                 for i in range(len(self.cur_piece)):
